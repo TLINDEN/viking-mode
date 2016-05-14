@@ -32,8 +32,6 @@
 ;; key stroke.  As visual  feedback the  thing to  be deleted  will be
 ;; highlighted shortly.
 
-;;; Description:
-
 ;; The default key binding is C-d, but  you may also bind it to C-k or
 ;; whatever you wish.
 
@@ -53,6 +51,8 @@
 ;; something  else in  between, it  starts from  scratch (i.e.  delete
 ;; word).
 
+;;; Installation:
+
 ;; To use, save viking-mode.el to a directory in your load-path.
 
 ;; Add something like this to your config:
@@ -68,6 +68,8 @@
 
 ;;    (viking-global-mode)
 
+;;; Customize:
+
 ;; By  default viking-mode  doesn't really  delete things,  everything
 ;; remains available  for yanking in  the kill ring. However,  you may
 ;; turn it into berserk mode by setting 'viking-really-delete to t:
@@ -77,8 +79,6 @@
 ;; You can change the default key binding by:
 
 ;;    (define-key viking-mode-map (kbd "C-k") 'vk/kill-thing-at-point)
-
-;; 
 
 ;; In case  you don't like  the default  key binding cascade,  you may
 ;; also use separate bindings for each kill function, e.g.:
@@ -97,6 +97,8 @@
 ;; Or, modify all available viking-mode variables interactively with:
 
 ;;    M-x customize-group  (select viking-mode)
+
+;;; Tips:
 
 ;; Besides, the primary function of viking-mode is vk/last-key-repeats,
 ;; which returns the number of times the last key have been pressed.
@@ -140,6 +142,9 @@
 ;;          repeat:  goto beginning of current buffer
 ;; (and the same with <end> in the other direction)
 
+;;; Reporting Bugs:
+
+;; Goto https://github.com/tlinden/viking-mode and file a new issue.
 
 
 
