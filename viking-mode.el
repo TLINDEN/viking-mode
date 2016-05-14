@@ -41,11 +41,11 @@
 ;; finally the whole buffer will be deleted.
 
 ;; Like:
-;; [keep pressing ctrl] C-d                  - word
-;;                      C-d C-d              - line remainder
-;;                      C-d C-d C-d          - line
-;;                      C-d C-d C-d C-d      - paragraph
-;;                      C-d C-d C-d C-d C-d  - buffer
+;; [keep pressing ctrl] C-d                  - del word
+;;                      C-d C-d              - del line remainder
+;;                      C-d C-d C-d          - del line
+;;                      C-d C-d C-d C-d      - del paragraph
+;;                      C-d C-d C-d C-d C-d  - del buffer
 
 ;; However, this only works when pressing the  key in a row. If you do
 ;; something  else in  between, it  starts from  scratch (i.e.  delete
