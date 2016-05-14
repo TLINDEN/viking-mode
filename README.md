@@ -4,8 +4,9 @@ Kill first, ask later - an emacs mode for killing things quickly
 # Introduction
 
 Viking minor mode  enables you to delete things at  point with one key
-stroke at once.  More and more will  be deleted if you  repeat the key
-stroke.
+stroke at once.  More  and more will be deleted if  you repeat the key
+stroke. As visual feedback the thing to be deleted will be highlighted
+shortly.
 
 The default  key binding is C-d,  but you may  also bind it to  C-k or
 whatever you wish.
@@ -51,6 +52,10 @@ it into berserk mode by setting 'viking-really-delete to t:
 
     (setq viking-really-delete t)
 
+You can change the default key binding by:
+
+    (define-key viking-mode-map (kbd "C-k") 'vk/kill-thing-at-point)
+
 In case you  don't like the default key binding  cascade, you may also
 use separate bindings for each kill function, e.g.:
 
@@ -60,6 +65,14 @@ use separate bindings for each kill function, e.g.:
     (define-key viking-mode-map (kbd "C-d l") 'vk/kill-line)
     (define-key viking-mode-map (kbd "C-d p") 'vk/kill-paragraph)
     (define-key viking-mode-map (kbd "C-d a") 'vk/kill-buffer)
+
+Also, the font face of the short highlight can be modified:
+
+    M-x customize-face  (select viking-blink)
+
+Or, modify all available viking-mode variables interactively with:
+
+    M-x customize-group  (select viking-mode)
 
 Besides, the primary function of viking-mode is vk/last-key-repeats,
 which returns the number of times the last key have been pressed.
