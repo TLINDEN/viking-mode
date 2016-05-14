@@ -22,7 +22,7 @@
 ;; Version: 0.01
 ;; Author: T.v.Dein <tlinden@cpan.org>
 ;; Keywords: kill delete
-;; Repository: https://github.com/tlinden/viking-mode
+;; URL: https://github.com/tlinden/viking-mode
 ;; License: GNU General Public License >= 2
 
 ;;; Commentary:
