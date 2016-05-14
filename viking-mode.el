@@ -19,15 +19,11 @@
 ;; Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 ;; USA
 
-;;      Version: 0.01
-;;       Author: T.v.Dein <tlinden@cpan.org>
-;;   Maintainer: T.v.Dein <tlinden@cpan.org>
-;;      Created: May 2016
-;;     Keywords: kill delete
-;;     Homepage: http://www.daemon.de/Viking
-;;   Repository: https://github.com/tlinden/viking-mode
-;;      License: GNU General Public License >= 2
-;; Distribution: This file is not part of Emacs
+;; Version: 0.01
+;; Author: T.v.Dein <tlinden@cpan.org>
+;; Keywords: kill delete
+;; Repository: https://github.com/tlinden/viking-mode
+;; License: GNU General Public License >= 2
 
 ;;; Commentary:
 
@@ -35,6 +31,8 @@
 ;; key stroke at once. More and more will be deleted if you repeat the
 ;; key stroke.  As visual  feedback the  thing to  be deleted  will be
 ;; highlighted shortly.
+
+;;; Description:
 
 ;; The default key binding is C-d, but  you may also bind it to C-k or
 ;; whatever you wish.
@@ -146,7 +144,7 @@
 
 
 
-;;; Code
+;;; Code:
 ;;;; Customizable variables
 ;;;;; Fonts
 
