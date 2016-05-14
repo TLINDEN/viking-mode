@@ -1,4 +1,4 @@
-;;; viking-mode.el - kill first, ask later
+;;; viking-mode.el --- kill first, ask later
 
 ;; Copyright (C) 2016, T.v.Dein <tlinden@cpan.org>
 
