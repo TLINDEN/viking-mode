@@ -29,7 +29,7 @@
 ;;      License: GNU General Public License >= 2
 ;; Distribution: This file is not part of Emacs
 
-;;; Commentary
+;;; Commentary:
 
 ;; Viking minor  mode enables you to  delete things at point  with one
 ;; key stroke at once. More and more will be deleted if you repeat the
