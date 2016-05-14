@@ -51,7 +51,7 @@
 ;; something  else in  between, it  starts from  scratch (i.e.  delete
 ;; word).
 
-;;; Installation:
+;;; Install:
 
 ;; To use, save viking-mode.el to a directory in your load-path.
 
