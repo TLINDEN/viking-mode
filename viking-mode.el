@@ -199,25 +199,18 @@ should be a point-moving function."
 
 (defun vk/last-key-repeats ()
   "Returns how many times the last key has been pressed as integer."
-  ;; FIXME: should be possible with just counting '(recent-keys)
   (interactive)
-  (let* ((keys (recent-keys))
+  (let* ((keys (reverse (append (recent-keys) nil)))
          (len (length keys))
-         (key1 (if (> len 0) (elt keys (- len 1)) nil))
-         (key2 (if (> len 1) (elt keys (- len 2)) nil))
-         (key3 (if (> len 2) (elt keys (- len 3)) nil))
-         (key4 (if (> len 3) (elt keys (- len 4)) nil))
-         (key5 (if (> len 4) (elt keys (- len 5)) nil))
-         (key-equal-1 (equal key1 key2))
-         (key-equal-2 (and key-equal-1 (equal key2 key3)))
-         (key-equal-3 (and key-equal-2 (equal key3 key4)))
-         (key-equal-4 (and key-equal-3 (equal key4 key5))))
-    (cond (key-equal-4 5)
-          (key-equal-3 4)
-          (key-equal-2 3)
-          (key-equal-1 2)
-          (t 1)
-          )))
+         (first (car keys))
+         (times 0))
+    (progn
+      (catch 'nomore
+        (dolist (k keys)
+          (if (equal first k)
+              (setq times (+ times 1))
+            (throw 'nomore t))))
+      times)))
 
 ;;;;; kill/delete wrappers
 
