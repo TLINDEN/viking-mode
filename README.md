@@ -3,7 +3,7 @@ Kill first, ask later - an emacs mode for killing things quickly
 
 # Demo
 
-![demo](https://github.com/tlinden/viking-mode/raw/master/viking-mode-demo.gif)
+![demo](http://www.daemon.de/idisk/Misc/viking-mode-demo.gif)
 
 # Introduction
 
