@@ -1,6 +1,10 @@
 # viking-mode
 Kill first, ask later - an emacs mode for killing things quickly
 
+# Demo
+
+![demo](https://github.com/tlinden/viking-mode/raw/master/viking-mode-demo.gif)
+
 # Introduction
 
 Viking minor mode  enables you to delete things at  point with one key
