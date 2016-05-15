@@ -350,12 +350,6 @@ kill function then."
   (lambda () (viking-mode t)
     ))
 
-;; be nice and provide a toggle
-(defun turn-on-viking-mode ()
-  "turn viking-mode on"
-  (interactive)
-  (viking-mode 1))
-
 ;; un-*ing-believable: I'm done *g* 
 (provide 'viking-mode)
 
