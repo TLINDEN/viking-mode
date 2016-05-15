@@ -34,7 +34,7 @@ To use, save viking-mode.el to a directory in your load-path.
 Add something like this to your config:
 
     (require 'viking-mode)
-    (add-hook 'text-mode-hook 'turn-on-viking-mode)
+    (add-hook 'text-mode-hook 'viking-mode)
 
 or load it manually
 
@@ -54,17 +54,17 @@ it into berserk mode by setting 'viking-really-delete to t:
 
 You can change the default key binding by:
 
-    (define-key viking-mode-map (kbd "C-k") 'vk/kill-thing-at-point)
+    (define-key viking-mode-map (kbd "C-k") 'viking-kill-thing-at-point)
 
 In case you  don't like the default key binding  cascade, you may also
 use separate bindings for each kill function, e.g.:
 
     (define-key viking-mode-map (kbd "C-d") nil)   turn C-d into a prefix-key
-    (define-key viking-mode-map (kbd "C-d w") 'vk/kill-word)
-    (define-key viking-mode-map (kbd "C-d r") 'vk/kill-line-from-point)
-    (define-key viking-mode-map (kbd "C-d l") 'vk/kill-line)
-    (define-key viking-mode-map (kbd "C-d p") 'vk/kill-paragraph)
-    (define-key viking-mode-map (kbd "C-d a") 'vk/kill-buffer)
+    (define-key viking-mode-map (kbd "C-d w") 'viking-kill-word)
+    (define-key viking-mode-map (kbd "C-d r") 'viking-kill-line-from-point)
+    (define-key viking-mode-map (kbd "C-d l") 'viking-kill-line)
+    (define-key viking-mode-map (kbd "C-d p") 'viking-kill-paragraph)
+    (define-key viking-mode-map (kbd "C-d a") 'viking-kill-buffer)
 
 Also, the font face of the short highlight can be modified:
 
@@ -74,13 +74,15 @@ Or, modify all available viking-mode variables interactively with:
 
     M-x customize-group  (select viking-mode)
 
-Besides, the primary function of viking-mode is vk/last-key-repeats,
+# Tips
+
+Besides, the primary function of viking-mode is viking-last-key-repeats,
 which returns the number of times the last key have been pressed.
 This can be used for other things as well, for example:
 
     (defun goto-begin()
     (interactive)
-      (let* ((key-times (vk/last-key-repeats)))
+      (let* ((key-times (viking-last-key-repeats)))
         (cond
          ((eq key-times 3)
           (if mark-active
@@ -94,7 +96,7 @@ This can be used for other things as well, for example:
     
     (defun goto-end ()
       (interactive)
-      (let* ((key-times (vk/last-key-repeats)))
+      (let* ((key-times (viking-last-key-repeats)))
         (cond
          ((eq key-times 3)
           (if mark-active
@@ -118,6 +120,9 @@ When you put this into your .emacs config, then you can do:
    
 (and the same with <end> in the other direction)
 
+# Reporting Bugs
+
+Goto https://github.com/tlinden/viking-mode and file a new issue.
 
 # Meta
 
@@ -139,13 +144,9 @@ You should  have received  a copy  of the  GNU General  Public License
 along  with  this  program;  if   not,  write  to  the  Free  Software
 Foundation, Inc.,  59 Temple Place,  Suite 330, Boston,  MA 02111-1307
 USA
-    
-         Version: 0.01
-          Author: T.v.Dein <tlinden@cpan.org>
-      Maintainer: T.v.Dein <tlinden@cpan.org>
-         Created: May 2016
-        Keywords: kill delete
-        Homepage: http://www.daemon.de/Viking
-      Repository: https://github.com/tlinden/viking-mode
-         License: GNU General Public License >= 2
-    Distribution: This file is not part of Emacs
+       
+Version  : 0.02
+Author   : T.v.Dein <tlinden@cpan.org>
+Keywords : kill delete
+URL      : https://github.com/tlinden/viking-mode
+License  : GNU General Public License >= 2
