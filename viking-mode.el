@@ -207,16 +207,15 @@ should be a point-moving function."
 (defun viking-last-key-repeats ()
   "Returns how many times the last key has been pressed as integer."
   (interactive)
-  (let* ((keys (reverse (append (recent-keys) nil)))
-         (len (length keys))
-         (first (car keys))
-         (times 0))
+  (let* ((keys (reverse (append (recent-keys) nil))) ;; list of last keys pressed, last @0
+         (pressed (car keys))                        ;; the very last key pressed, i.e. the one bound to this defun
+         (times 0))                                  ;; how many times that key have been pressed
     (progn
-      (catch 'nomore
-        (dolist (k keys)
-          (if (equal first k)
-              (setq times (+ times 1))
-            (throw 'nomore t))))
+      (catch 'nomore                     ;; don't iterate endless
+        (dolist (k keys)                 ;; loop over the key list, (car keys) is the most recent, due to 'reverse above
+          (if (equal pressed k)          ;; one more of the same key pressed in a row
+              (setq times (+ times 1))   ;;   register
+            (throw 'nomore t))))         ;; another key, break the loop and rerturn the count
       times)))
 
 ;;;;; kill/delete wrappers
