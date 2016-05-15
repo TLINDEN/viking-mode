@@ -19,7 +19,7 @@
 ;; Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 ;; USA
 
-;; Version: 0.01
+;; Version: 0.02
 ;; Author: T.v.Dein <tlinden@cpan.org>
 ;; Keywords: kill delete
 ;; URL: https://github.com/tlinden/viking-mode
@@ -58,9 +58,9 @@
 ;; Add something like this to your config:
 
 ;;    (require 'viking-mode)
-;;    (add-hook 'text-mode-hook 'turn-on-viking-mode)
+;;    (add-hook 'text-mode-hook 'viking-mode)
 
-;; or load it manually
+;; or load it manually, when needed:
 
 ;;    M-x viking-mode
 
@@ -78,17 +78,17 @@
 
 ;; You can change the default key binding by:
 
-;;    (define-key viking-mode-map (kbd "C-k") 'vk/kill-thing-at-point)
+;;    (define-key viking-mode-map (kbd "C-k") 'viking-kill-thing-at-point)
 
 ;; In case  you don't like  the default  key binding cascade,  you may
 ;; also use separate bindings for each kill function, e.g.:
 
 ;;    (define-key viking-mode-map (kbd "C-d") nil)   ;; turn C-d into a prefix-key
-;;    (define-key viking-mode-map (kbd "C-d w") 'vk/kill-word)
-;;    (define-key viking-mode-map (kbd "C-d r") 'vk/kill-line-from-point)
-;;    (define-key viking-mode-map (kbd "C-d l") 'vk/kill-line)
-;;    (define-key viking-mode-map (kbd "C-d p") 'vk/kill-paragraph)
-;;    (define-key viking-mode-map (kbd "C-d a") 'vk/kill-buffer)
+;;    (define-key viking-mode-map (kbd "C-d w") 'viking-kill-word)
+;;    (define-key viking-mode-map (kbd "C-d r") 'viking-kill-line-from-point)
+;;    (define-key viking-mode-map (kbd "C-d l") 'viking-kill-line)
+;;    (define-key viking-mode-map (kbd "C-d p") 'viking-kill-paragraph)
+;;    (define-key viking-mode-map (kbd "C-d a") 'viking-kill-buffer)
 
 ;; Also, the font face of the short highlight can be modified:
 
@@ -100,13 +100,13 @@
 
 ;;; Tips:
 
-;; Besides, the primary function of viking-mode is vk/last-key-repeats,
+;; Besides, the primary function of viking-mode is viking-last-key-repeats,
 ;; which returns the number of times the last key have been pressed.
 ;; This can be used for other things as well, for example:
 
 ;;    (defun goto-begin()
 ;;      (interactive)
-;;      (let* ((key-times (vk/last-key-repeats)))
+;;      (let* ((key-times (viking-last-key-repeats)))
 ;;        (cond
 ;;         ((eq key-times 3)
 ;;          (if mark-active
@@ -120,7 +120,7 @@
 
 ;;    (defun goto-end ()
 ;;      (interactive)
-;;      (let* ((key-times (vk/last-key-repeats)))
+;;      (let* ((key-times (viking-last-key-repeats)))
 ;;        (cond
 ;;         ((eq key-times 3)
 ;;          (if mark-active
@@ -140,6 +140,7 @@
 ;; hit <home> once:  goto beginning of current line
 ;;          repeat:  goto beginning of current window
 ;;          repeat:  goto beginning of current buffer
+
 ;; (and the same with <end> in the other direction)
 
 ;;; Reporting Bugs:
@@ -150,6 +151,11 @@
 
 
 ;;; Code:
+;;;; Consts
+
+(defconst viking-mode-version "0.02" "Viking Mode version.")
+
+
 ;;;; Customizable variables
 ;;;;; Fonts
 
@@ -161,7 +167,7 @@
 ;;;;; Modify behavior
 
 (defcustom viking-blink-time 0.2
-  "How long should 'vk/blink-region highligh a region,
+  "How long should viking highlight a region,
 in seconds, specify milliseconds like this: 0.1"
   :group 'viking-mode)
 
@@ -178,7 +184,7 @@ The default is nil: keep deleted things in the kill-ring."
 
 ;; internal utility functions required by the kill functions
 
-(defun vk/blink-region(begin end)
+(defun viking--blink-region(begin end)
   "Blink a region shortly. It does this by highlighting the
 region between 'begin and 'end using 'font-lock-viking-face
 for 'viking-blink-time seconds."
@@ -190,14 +196,15 @@ for 'viking-blink-time seconds."
       (delete-overlay rh)
       )))
 
-(defun vk/get-point (symbol &optional arg)
+(defun viking--get-point (symbol &optional arg)
   "Returns the point by evaluating 'symbol, which
 should be a point-moving function."
   (funcall symbol arg)
   (point)
   )
 
-(defun vk/last-key-repeats ()
+;; may be used for other purposes as well, see commentary 'Tips'
+(defun viking-last-key-repeats ()
   "Returns how many times the last key has been pressed as integer."
   (interactive)
   (let* ((keys (reverse (append (recent-keys) nil)))
@@ -214,14 +221,14 @@ should be a point-moving function."
 
 ;;;;; kill/delete wrappers
 
-(defun vk/kill-region (beg end)
+(defun viking--kill-region (beg end)
   "Deletes or kills a region depending on 'viking-really-delete."
   (message "vkkill")
   (if viking-really-delete
       (delete-region beg end)
     (kill-region beg end)))
 
-(defun vk/really-delete-line () ;; based on code by xah
+(defun viking--really-delete-line () ;; based on code by xah
   "kill-line without copy"
   (interactive)
   (delete-region
@@ -230,99 +237,101 @@ should be a point-moving function."
   (delete-char 1)
   )
 
-;;;;; Interactive kill functions
-
-(defun vk/kill-word-at-point ()
+(defun viking--kill-word-at-point ()
   "Kill word at point."
   (interactive)
   (let
-      ((beg (vk/get-point 'backward-word 1))
-       (end (vk/get-point 'forward-word 1)))
+      ((beg (viking--get-point 'backward-word 1))
+       (end (viking--get-point 'forward-word 1)))
     (progn
-      (vk/blink-region beg end)
-      (vk/kill-region beg end)
+      (viking--blink-region beg end)
+      (viking--kill-region beg end)
       (message "word at point deleted"))))
 
 
-(defun vk/kill-word-right ()
-  "Kill word to the right"
+(defun viking--kill-word-right ()
+  "Kill word from line beginning to the right."
   (interactive)
   (let
       ((beg (point))
-       (end (vk/get-point 'forward-word 1)))
-    (vk/blink-region beg end)
-    (vk/kill-region beg end)
+       (end (viking--get-point 'forward-word 1)))
+    (viking--blink-region beg end)
+    (viking--kill-region beg end)
     (message "word right of point deleted")))
 
-(defun vk/kill-word ()
-  "Kill word"
+
+;;;;; Public interactive kill functions
+
+(defun viking-kill-word ()
+  "Kill word at point"
   (interactive)
   (if (eq (point) (line-beginning-position))
-      (vk/kill-word-right)
-    (vk/kill-word-at-point)
+      (viking--kill-word-right)
+    (viking--kill-word-at-point)
     ))
 
-(defun vk/kill-line ()
+(defun viking-kill-line ()
   "Kill line at point including newline."
   (interactive)
-  (vk/blink-region (vk/get-point 'beginning-of-line 1) (vk/get-point 'end-of-line 1))
+  (viking--blink-region (viking--get-point 'beginning-of-line 1)
+                        (viking--get-point 'end-of-line 1))
   (move-beginning-of-line 1)
   (let ((k kill-whole-line))
     (progn
       (setq kill-whole-line t)  ;; temp enable
       (if viking-really-delete
-          (vk/really-delete-line)
+          (viking--really-delete-line)
         (kill-line)
         )
       (setq kill-whole-line k)
       ))
   (message "line at point deleted"))
 
-(defun vk/kill-line-from-point ()
+(defun viking-kill-line-from-point ()
   "Kill line from point to the right without newline."
   (interactive)
   (let ((beg (point))
-        (end (vk/get-point 'end-of-line 1)))
+        (end (viking--get-point 'end-of-line 1)))
     (progn
-      (vk/blink-region beg end)
-      (vk/kill-region beg end) 
+      (viking--blink-region beg end)
+      (viking--kill-region beg end) 
       (message "line from point deleted"))))
 
-(defun vk/kill-paragraph ()
+(defun viking-kill-paragraph ()
   "Kill paragraph at point."
   (interactive)
   (let
-      ((beg (vk/get-point 'backward-paragraph 1))
-       (end (vk/get-point 'forward-paragraph 1)))
+      ((beg (viking--get-point 'backward-paragraph 1))
+       (end (viking--get-point 'forward-paragraph 1)))
     (progn
-      (vk/blink-region beg end)
-      (vk/kill-region beg end)
+      (viking--blink-region beg end)
+      (viking--kill-region beg end)
       (message "paragraph at point deleted"))))
 
-(defun vk/kill-buffer ()
+(defun viking-kill-buffer ()
   "Kill the whole buffer."
   (interactive)
   (let ((beg (point-min))
         (end (point-max)))
     (progn
-      (vk/blink-region beg end)
-      (vk/kill-region beg end)
+      (viking--blink-region beg end)
+      (viking--kill-region beg end)
       (message "buffer deleted"))))
 
 ;;;;; Primary key binding function
 
-(defun vk/kill-thing-at-point()
+(defun viking-kill-thing-at-point()
   "Delete thing at point. Checks how many times the
 calling key has been pressed and runs the appropriate
 kill function then."
   (interactive)
-  (let* ((key-times (vk/last-key-repeats)))
+  (let* ((key-times (viking-last-key-repeats)))
     (cond
-     ((eq key-times 5) (vk/kill-buffer)) 
-     ((eq key-times 4) (vk/kill-paragraph)) 
-     ((eq key-times 3) (vk/kill-line))
-     ((eq key-times 2) (vk/kill-line-from-point))
-     ((eq key-times 1) (vk/kill-word))
+     ((eq key-times 5) (viking-kill-buffer)) 
+     ((eq key-times 4) (viking-kill-paragraph)) 
+     ((eq key-times 3) (viking-kill-line))
+     ((eq key-times 2) (viking-kill-line-from-point))
+     ((eq key-times 1) (viking-kill-word))
      )
     ))
 
@@ -334,7 +343,7 @@ kill function then."
   :lighter " V"
   :group 'viking-mode
   :keymap (let ((map (make-sparse-keymap)))
-            (define-key map (kbd "C-d") 'vk/kill-thing-at-point)
+            (define-key map (kbd "C-d") 'viking-kill-thing-at-point)
             map))
 
 ;; just in case someone wants to use it globally
