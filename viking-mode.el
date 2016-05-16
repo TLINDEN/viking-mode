@@ -155,6 +155,12 @@
 
 (defconst viking-mode-version "0.02" "Viking Mode version.")
 
+(defgroup viking-mode nil
+  "Kill first, ask later - an emacs mode for killing things quickly"
+  :group 'extensions
+  :group 'tools
+  :link '(url-link :tag "Repository" "https://github.com/tlinden/viking-mode"))
+
 
 ;;;; Customizable variables
 ;;;;; Fonts
