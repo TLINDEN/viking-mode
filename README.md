@@ -120,11 +120,11 @@ This can be used for other things as well, for example:
 
 When you put this into your .emacs config, then you can do:
 
-   hit <home> once:  goto beginning of current line
+   hit ```<home>``` once:  goto beginning of current line
             repeat:  goto beginning of current window
             repeat:  goto beginning of current buffer
    
-(and the same with <end> in the other direction)
+(and the same with ```<end>``` in the other direction)
 
 # Reporting Bugs
 
