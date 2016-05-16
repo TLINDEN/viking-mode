@@ -1,6 +1,8 @@
 # viking-mode
 Kill first, ask later - an emacs mode for killing things quickly
 
+[![MELPA](http://melpa.org/packages/viking-mode-badge.svg)](http://melpa.org/#/viking-mode)
+
 # Demo
 
 ![demo](http://www.daemon.de/idisk/Misc/viking-mode-demo.gif)
