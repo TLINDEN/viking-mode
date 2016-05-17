@@ -404,8 +404,9 @@ kill function then."
 ;; just in case someone wants to use it globally
 (define-global-minor-mode viking-global-mode
   viking-mode
-  (lambda () (viking-mode t)
-    ))
+  (lambda () (viking-mode t))
+  :group 'viking-mode
+  )
 
 ;; un-*ing-believable: I'm done *g* 
 (provide 'viking-mode)
