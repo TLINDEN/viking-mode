@@ -19,7 +19,7 @@
 ;; Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 ;; USA
 
-;; Version: 0.02
+;; Version: 0.03.TEST
 ;; Author: T.v.Dein <tlinden@cpan.org>
 ;; Keywords: kill delete
 ;; URL: https://github.com/tlinden/viking-mode
@@ -35,13 +35,16 @@
 ;; The default key binding is C-d, but  you may also bind it to C-k or
 ;; whatever you wish.
 
-;; If you press C-d the first time, the word at point will be deleted.
-;; If you press it again, the remainder of the line from point will be
-;; deleted. If pressed  again, the whole line, then  the paragraph and
-;; finally the whole buffer will be deleted.
+;; If you press C-d the first time,  the word at point will be deleted
+;; (but if there's no word at point but whitespaces or an empty line),
+;; they will be deleted instead, which is the same as M-SPC.
+
+;; If you press  C-d again, the remainder of the  line from point will
+;; be deleted.  If pressed again,  the whole line, then  the paragraph
+;; and finally the whole buffer will be deleted.
 
 ;; Like:
-;; [keep pressing ctrl] C-d                  - del word
+;; [keep pressing ctrl] C-d                  - del word | spc
 ;;                      C-d C-d              - del line remainder
 ;;                      C-d C-d C-d          - del line
 ;;                      C-d C-d C-d C-d      - del paragraph
@@ -50,6 +53,11 @@
 ;; However, this only works when pressing the  key in a row. If you do
 ;; something  else in  between, it  starts from  scratch (i.e.  delete
 ;; word).
+
+;; By default viking-mode is greedy: after applying a kill function it
+;; looks  if  point  ends  up  alone   on  an  empty  line  or  inside
+;; whitespaces.  In  such a case, those  will be deleted as  well. The
+;; greedy behavior may be turned off however.
 
 ;;; Install:
 
@@ -75,6 +83,11 @@
 ;; turn it into berserk mode by setting 'viking-really-delete to t:
 
 ;;    (setq viking-really-delete t)
+
+;; To  turn   off  greedy  deleting  of   whitespace  remainders,  set
+;; 'viking-greedy-kill to nil:
+
+;;     (setq viking-greedy-kill nil)
 
 ;; You can change the default key binding by:
 
@@ -183,6 +196,12 @@ nothing will remain available via kill-ring once deleted.
 The default is nil: keep deleted things in the kill-ring."
   :group 'viking-mode)
 
+(defcustom viking-greedy-kill t
+  "If set to t (default), whitespaces and newline at point will be
+deleted after the kill function, if any. Uses 'just-one-space."
+  :group 'viking-mode)
+
+
 
 
 ;;;; Functions
@@ -224,6 +243,14 @@ should be a point-moving function."
             (throw 'nomore t))))         ;; another key, break the loop and return the count
       times)))
 
+
+(defun viking--point-is-in-space ()
+  "Return true if point is surrounded by space (which is: [\s\r\n])."
+  (interactive)
+  (or
+   (looking-at "[[:space:]]+")
+   (eq (point) (line-end-position))))
+
 ;;;;; kill/delete wrappers
 
 (defun viking--kill-region (beg end)
@@ -264,19 +291,37 @@ should be a point-moving function."
     (viking--kill-region beg end)
     (message "word right of point deleted")))
 
+(defun viking--kill-space()
+  "Kill space around point, including newline(s)."
+  (interactive)
+    (let ((beg (save-excursion (skip-chars-backward " \t\r\n") (point)))
+          (end (save-excursion (skip-chars-forward " \t\r\n") (point))))
+      (viking--blink-region beg end))
+    (just-one-space -1)
+    (message "spaces cleared"))
+
 
 ;;;;; Public interactive kill functions
 
 (defun viking-kill-word ()
-  "Kill word at point"
+  "If point is on space or newline, delete those (like M-SPC), else kill word at point.
+If 'viking-greedy-kill is t, clean up spaces and newlines afterwards."
   (interactive)
-  (if (eq (point) (line-beginning-position))
-      (viking--kill-word-right)
-    (viking--kill-word-at-point)
-    ))
+  (if (viking--point-is-in-space)
+      (viking--kill-space)
+    (progn
+      (if (eq (point) (line-beginning-position))
+          (viking--kill-word-right)
+        (viking--kill-word-at-point)
+        )
+      (when viking-greedy-kill
+        (viking--kill-space))
+      ))
+  )
 
 (defun viking-kill-line ()
-  "Kill line at point including newline."
+  "Kill line at point including newline.
+If 'viking-greedy-kill is t, clean up spaces and newlines afterwards."
   (interactive)
   (viking--blink-region (viking--get-point 'beginning-of-line 1)
                         (viking--get-point 'end-of-line 1))
@@ -289,6 +334,8 @@ should be a point-moving function."
         (kill-line)
         )
       (setq kill-whole-line k)
+      (when viking-greedy-kill
+        (viking--kill-space))
       ))
   (message "line at point deleted"))
 
@@ -299,11 +346,12 @@ should be a point-moving function."
         (end (viking--get-point 'end-of-line 1)))
     (progn
       (viking--blink-region beg end)
-      (viking--kill-region beg end) 
+      (viking--kill-region beg end)
       (message "line from point deleted"))))
 
 (defun viking-kill-paragraph ()
-  "Kill paragraph at point."
+  "Kill paragraph at point.
+If 'viking-greedy-kill is t, clean up spaces and newlines afterwards."
   (interactive)
   (let
       ((beg (viking--get-point 'backward-paragraph 1))
@@ -311,6 +359,8 @@ should be a point-moving function."
     (progn
       (viking--blink-region beg end)
       (viking--kill-region beg end)
+      (when viking-greedy-kill
+        (viking--kill-space))
       (message "paragraph at point deleted"))))
 
 (defun viking-kill-buffer ()
