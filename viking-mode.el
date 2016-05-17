@@ -19,7 +19,7 @@
 ;; Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 ;; USA
 
-;; Version: 0.03.TEST
+;; Version: 0.03
 ;; Author: T.v.Dein <tlinden@cpan.org>
 ;; Keywords: kill delete
 ;; URL: https://github.com/tlinden/viking-mode
@@ -36,8 +36,8 @@
 ;; whatever you wish.
 
 ;; If you press C-d the first time,  the word at point will be deleted
-;; (but if there's no word at point but whitespaces or an empty line),
-;; they will be deleted instead, which is the same as M-SPC.
+;; (but if there's no word at  point but whitespaces or an empty line,
+;; they will be deleted instead, which is the same as M-SPC).
 
 ;; If you press  C-d again, the remainder of the  line from point will
 ;; be deleted.  If pressed again,  the whole line, then  the paragraph
@@ -166,7 +166,7 @@
 ;;; Code:
 ;;;; Consts
 
-(defconst viking-mode-version "0.02" "Viking Mode version.")
+(defconst viking-mode-version "0.03" "Viking Mode version.")
 
 (defgroup viking-mode nil
   "Kill first, ask later - an emacs mode for killing things quickly"
@@ -292,13 +292,16 @@ should be a point-moving function."
     (message "word right of point deleted")))
 
 (defun viking--kill-space()
+  ;; FIXME: might be better to implement this myself
+  ;; so that all space+newlines will be deleted but
+  ;; the last one, which is sometimes better...
   "Kill space around point, including newline(s)."
   (interactive)
-    (let ((beg (save-excursion (skip-chars-backward " \t\r\n") (point)))
-          (end (save-excursion (skip-chars-forward " \t\r\n") (point))))
-      (viking--blink-region beg end))
-    (just-one-space -1)
-    (message "spaces cleared"))
+  (let ((beg (save-excursion (skip-chars-backward " \t\r\n") (point)))
+        (end (save-excursion (skip-chars-forward " \t\r\n") (point))))
+    (viking--blink-region beg end))
+  (just-one-space -1)
+  (message "spaces cleared"))
 
 
 ;;;;; Public interactive kill functions

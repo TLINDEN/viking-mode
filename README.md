@@ -17,14 +17,13 @@ shortly.
 The default  key binding is C-d,  but you may  also bind it to  C-k or
 whatever you wish.
 
-If you press  C-d the first time,  the word at point  will be deleted.
-If you press  it again, the remainder  of the line from  point will be
-deleted.  If pressed  again, the  whole line,  then the  paragraph and
-finally the whole buffer will be deleted.
+If you  press C-d the  first time, the word  at point will  be deleted
+(but if  there's no word  at point but  whitespaces or an  empty line,
+they will be deleted instead, which is the same as M-SPC).
 
 Like:
 
-    [keep pressing ctrl] C-d                  - word
+    [keep pressing ctrl] C-d                  - word | spc
                          C-d C-d              - line remainder
                          C-d C-d C-d          - line
                          C-d C-d C-d C-d      - paragraph
@@ -32,6 +31,11 @@ Like:
 
 However, this  only works when  pressing the key in  a row. If  you do
 something else in between, it starts from scratch (i.e.  delete word).
+
+By default  viking-mode is greedy:  after applying a kill  function it
+looks if point  ends up alone on an empty  line or inside whitespaces.
+In such a case, those will be deleted as well. The greedy behavior may
+be turned off however.
 
 # Install
 
@@ -57,6 +61,11 @@ remains available for yanking in the  kill ring. However, you may turn
 it into berserk mode by setting 'viking-really-delete to t:
 
     (setq viking-really-delete t)
+
+To   turn  off   greedy   deleting  of   whitespace  remainders,   set
+'viking-greedy-kill to nil:
+
+    (setq viking-greedy-kill nil)
 
 You can change the default key binding by:
 
