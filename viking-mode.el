@@ -19,7 +19,7 @@
 ;; Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 ;; USA
 
-;; Version: 0.03
+;; Version: 0.04
 ;; Author: T.v.Dein <tlinden@cpan.org>
 ;; Keywords: kill delete
 ;; URL: https://github.com/tlinden/viking-mode
@@ -166,7 +166,7 @@
 ;;; Code:
 ;;;; Consts
 
-(defconst viking-mode-version "0.03" "Viking Mode version.")
+(defconst viking-mode-version "0.04" "Viking Mode version.")
 
 (defgroup viking-mode nil
   "Kill first, ask later - an emacs mode for killing things quickly"
@@ -291,17 +291,29 @@ should be a point-moving function."
     (viking--kill-region beg end)
     (message "word right of point deleted")))
 
+
 (defun viking--kill-space()
-  ;; FIXME: might be better to implement this myself
-  ;; so that all space+newlines will be deleted but
-  ;; the last one, which is sometimes better...
-  "Kill space around point, including newline(s)."
+  "Kill space around point, including newline(s), but the first."
   (interactive)
-  (let ((beg (save-excursion (skip-chars-backward " \t\r\n") (point)))
-        (end (save-excursion (skip-chars-forward " \t\r\n") (point))))
-    (viking--blink-region beg end))
-  (just-one-space -1)
-  (message "spaces cleared"))
+  (let* ((lineA 0) (lineB 0)
+         (beg (save-excursion
+               (skip-chars-backward " \t\r\n")
+               (cond ((looking-at "\r\n")
+                      (forward-char 2))
+                     ((looking-at "\n")
+                      (forward-char 1)))
+               (setq lineA (line-number-at-pos))
+               (point)))
+         (end (save-excursion
+                (skip-chars-forward " \t\r\n")
+                (setq lineB (line-number-at-pos))
+                (point)))
+         )
+    (viking--blink-region beg end)
+    (if (= lineA lineB)
+        (just-one-space)
+      (delete-region beg end))
+    (message "spaces cleared")))
 
 
 ;;;;; Public interactive kill functions
@@ -405,9 +417,8 @@ kill function then."
             map))
 
 ;; just in case someone wants to use it globally
-(define-global-minor-mode viking-global-mode
-  viking-mode
-  (lambda () (viking-mode t))
+(define-globalized-minor-mode viking-global-mode
+  viking-mode viking-mode
   :group 'viking-mode
   )
 
