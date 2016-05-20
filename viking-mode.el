@@ -19,7 +19,7 @@
 ;; Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 ;; USA
 
-;; Version: 0.04
+;; Version: 0.05
 ;; Author: T.v.Dein <tlinden@cpan.org>
 ;; Keywords: kill delete
 ;; URL: https://github.com/tlinden/viking-mode
@@ -88,6 +88,10 @@
 ;; 'viking-greedy-kill to nil:
 
 ;;     (setq viking-greedy-kill nil)
+
+;; To enable quick deletion of regions using the normal key binding:
+
+;;     (setq viking-enable-region-kill t)
 
 ;; You can change the default key binding by:
 
@@ -166,7 +170,7 @@
 ;;; Code:
 ;;;; Consts
 
-(defconst viking-mode-version "0.04" "Viking Mode version.")
+(defconst viking-mode-version "0.05" "Viking Mode version.")
 
 (defgroup viking-mode nil
   "Kill first, ask later - an emacs mode for killing things quickly"
@@ -199,6 +203,11 @@ The default is nil: keep deleted things in the kill-ring."
 (defcustom viking-greedy-kill t
   "If set to t (default), whitespaces and newline at point will be
 deleted after the kill function, if any. Uses 'just-one-space."
+  :group 'viking-mode)
+
+(defcustom viking-enable-region-kill nil
+  "If set to true (default: nil), kill the whole region if
+mark is set."
   :group 'viking-mode)
 
 
@@ -255,7 +264,6 @@ should be a point-moving function."
 
 (defun viking--kill-region (beg end)
   "Deletes or kills a region depending on 'viking-really-delete."
-  (message "vkkill")
   (if viking-really-delete
       (delete-region beg end)
     (kill-region beg end)))
@@ -297,13 +305,13 @@ should be a point-moving function."
   (interactive)
   (let* ((lineA 0) (lineB 0)
          (beg (save-excursion
-               (skip-chars-backward " \t\r\n")
-               (cond ((looking-at "\r\n")
-                      (forward-char 2))
-                     ((looking-at "\n")
-                      (forward-char 1)))
-               (setq lineA (line-number-at-pos))
-               (point)))
+                (skip-chars-backward " \t\r\n")
+                (cond ((looking-at "\r\n")
+                       (forward-char 2))
+                      ((looking-at "\n")
+                       (forward-char 1)))
+                (setq lineA (line-number-at-pos))
+                (point)))
          (end (save-excursion
                 (skip-chars-forward " \t\r\n")
                 (setq lineB (line-number-at-pos))
@@ -315,10 +323,21 @@ should be a point-moving function."
       (delete-region beg end))
     (message "spaces cleared")))
 
+;; implements #2: behave different inside region
+;; FIXME: maybe also do word->line->region?
+;;        Currently it just throws the whole region away
+(defun viking-kill-region()
+  "Kill region at point, if any"
+  (interactive)
+  (if viking-really-delete
+      (delete-region (point-min) (point-max) t)
+    (kill-region (point-min) (point-max) t))
+  (message "region deleted"))
+
 
 ;;;;; Public interactive kill functions
 
-(defun viking-kill-word ()
+(defun --viking-kill-word ()
   "If point is on space or newline, delete those (like M-SPC), else kill word at point.
 If 'viking-greedy-kill is t, clean up spaces and newlines afterwards."
   (interactive)
@@ -329,10 +348,28 @@ If 'viking-greedy-kill is t, clean up spaces and newlines afterwards."
           (viking--kill-word-right)
         (viking--kill-word-at-point)
         )
-      (when viking-greedy-kill
+      (when viking-greedy-kill  ;; clean up afterwards as well
         (viking--kill-space))
-      ))
-  )
+      )))
+
+(defun viking-kill-word ()
+  "If point is on space or newline, delete those (like M-SPC), else kill word at point.
+If 'viking-greedy-kill is t, clean up spaces and newlines afterwards."
+  (interactive)
+  (if (and viking-enable-region-kill mark-active)
+      (viking-kill-region) ;; region-kill can only happen on first C-d invokation
+
+    ;; else normal processing
+    (if (viking--point-is-in-space) 
+        (viking--kill-space)
+      (progn
+        (if (eq (point) (line-beginning-position))
+            (viking--kill-word-right)
+          (viking--kill-word-at-point)
+          )
+        (when viking-greedy-kill  ;; clean up afterwards as well?
+          (viking--kill-space))
+        ))))
 
 (defun viking-kill-line ()
   "Kill line at point including newline.
