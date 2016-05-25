@@ -346,10 +346,15 @@ should be a point-moving function."
 'viking--current-killf,   reset    it   to   the    contents   of
 'viking-kill-funcs if COUNT  is 1 (thus the command  key has been
 pressed the first time in a row"
-  (if (eq count 1)          ; start from scratch
+  ;; start from scratch
+  (if (eq count 1)
       (setq viking--current-killf viking-kill-funcs))
-  (if viking--current-killf ; only call killer if not done killing
-      (funcall (pop viking--current-killf))))
+
+  ;; only call killer if not done killing
+  (if (and viking--current-killf (not (eobp)))
+      (funcall (pop viking--current-killf))
+    (signal 'end-of-buffer nil)
+    ))
 
 
 ;;;;; Public interactive kill functions
