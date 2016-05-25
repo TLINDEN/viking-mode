@@ -111,6 +111,16 @@
 
 ;;    M-x customize-face  (select viking-blink)
 
+;; The kill functions to be called in a row can be customized as well. The
+;; default is this list:
+
+;;     (setq vikink-kill-funcs (list 'viking-kill-word 'viking-kill-line-from-point
+;;                                   'viking-kill-line 'viking-kill-paragraph
+;;                                   'viking-kill-buffer))
+
+;; Normally there should be no need  to modify it. However, this gives
+;; you much more flexibility.
+
 ;; Or, modify all available viking-mode variables interactively with:
 
 ;;    M-x customize-group  (select viking-mode)
