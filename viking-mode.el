@@ -210,7 +210,12 @@ deleted after the kill function, if any. Uses 'just-one-space."
 mark is set."
   :group 'viking-mode)
 
+(defcustom viking-kill-funcs (list 'viking-kill-word 'viking-kill-line-from-point 'viking-kill-line 'viking-kill-paragraph 'viking-kill-buffer)
+  "The actual kill functions being called in a row starting with the first entry"
+  :group 'viking-mode)
 
+;; internal copy
+(defvar viking--current-killf ())
 
 
 ;;;; Functions
@@ -259,6 +264,7 @@ should be a point-moving function."
   (or
    (looking-at "[[:space:]]+")
    (eq (point) (line-end-position))))
+
 
 ;;;;; kill/delete wrappers
 
@@ -335,6 +341,17 @@ should be a point-moving function."
   (message "region deleted"))
 
 
+(defun viking--killw (count)
+  "execute  kill function  from  the list  of  kill functions  in
+'viking--current-killf,   reset    it   to   the    contents   of
+'viking-kill-funcs if COUNT  is 1 (thus the command  key has been
+pressed the first time in a row"
+  (if (eq count 1)          ; start from scratch
+      (setq viking--current-killf viking-kill-funcs))
+  (if viking--current-killf ; only call killer if not done killing
+      (funcall (pop viking--current-killf))))
+
+
 ;;;;; Public interactive kill functions
 
 (defun viking-kill-word ()
@@ -345,11 +362,14 @@ If 'viking-greedy-kill is t, clean up spaces and newlines afterwards."
       (viking-kill-region) ;; region-kill can only happen on first C-d invokation
 
     ;; else normal processing
-    (if (viking--point-is-in-space) 
-        (viking--kill-space)
+    (if (viking--point-is-in-space)
+        (progn
+          (viking--kill-space)
+          ;; reset kill func list:
+          (setq viking--current-killf viking-kill-funcs))
       (progn
         (if (or (eq (point) (line-beginning-position))
-                (looking-back "[ \t]"))
+                (memq (preceding-char) '(?\t ?\ )))
             (viking--kill-word-right)
           (viking--kill-word-at-point)
           )
@@ -413,20 +433,14 @@ If 'viking-greedy-kill is t, clean up spaces and newlines afterwards."
 
 ;;;;; Primary key binding function
 
+
 (defun viking-kill-thing-at-point()
   "Delete thing at point. Checks how many times the
 calling key has been pressed and runs the appropriate
 kill function then."
   (interactive)
-  (let* ((key-times (viking-last-key-repeats)))
-    (cond
-     ((eq key-times 5) (viking-kill-buffer)) 
-     ((eq key-times 4) (viking-kill-paragraph)) 
-     ((eq key-times 3) (viking-kill-line))
-     ((eq key-times 2) (viking-kill-line-from-point))
-     ((eq key-times 1) (viking-kill-word))
-     )
-    ))
+  (viking--killw (viking-last-key-repeats)))
+
 
 ;;;; Interface
 ;;;###autoload
