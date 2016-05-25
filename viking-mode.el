@@ -19,7 +19,7 @@
 ;; Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 ;; USA
 
-;; Version: 0.05
+;; Version: 0.06
 ;; Author: T.v.Dein <tlinden@cpan.org>
 ;; Keywords: kill delete
 ;; URL: https://github.com/tlinden/viking-mode
@@ -170,7 +170,7 @@
 ;;; Code:
 ;;;; Consts
 
-(defconst viking-mode-version "0.05" "Viking Mode version.")
+(defconst viking-mode-version "0.06" "Viking Mode version.")
 
 (defgroup viking-mode nil
   "Kill first, ask later - an emacs mode for killing things quickly"
@@ -337,21 +337,6 @@ should be a point-moving function."
 
 ;;;;; Public interactive kill functions
 
-(defun --viking-kill-word ()
-  "If point is on space or newline, delete those (like M-SPC), else kill word at point.
-If 'viking-greedy-kill is t, clean up spaces and newlines afterwards."
-  (interactive)
-  (if (viking--point-is-in-space)
-      (viking--kill-space)
-    (progn
-      (if (eq (point) (line-beginning-position))
-          (viking--kill-word-right)
-        (viking--kill-word-at-point)
-        )
-      (when viking-greedy-kill  ;; clean up afterwards as well
-        (viking--kill-space))
-      )))
-
 (defun viking-kill-word ()
   "If point is on space or newline, delete those (like M-SPC), else kill word at point.
 If 'viking-greedy-kill is t, clean up spaces and newlines afterwards."
@@ -363,7 +348,8 @@ If 'viking-greedy-kill is t, clean up spaces and newlines afterwards."
     (if (viking--point-is-in-space) 
         (viking--kill-space)
       (progn
-        (if (eq (point) (line-beginning-position))
+        (if (or (eq (point) (line-beginning-position))
+                (looking-back "[ \t]"))
             (viking--kill-word-right)
           (viking--kill-word-at-point)
           )
