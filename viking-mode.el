@@ -19,7 +19,7 @@
 ;; Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 ;; USA
 
-;; Version: 0.06
+;; Version: 0.07
 ;; Author: T.v.Dein <tlinden@cpan.org>
 ;; Keywords: kill delete
 ;; URL: https://github.com/tlinden/viking-mode
@@ -58,6 +58,11 @@
 ;; looks  if  point  ends  up  alone   on  an  empty  line  or  inside
 ;; whitespaces.  In  such a case, those  will be deleted as  well. The
 ;; greedy behavior may be turned off however.
+
+;; Another  variant is  to use  viking  mode together  with the  great
+;; expand-region mode (available on  melpa). If installed and enabled,
+;; a  region is  first marked  using expand-region  and then  deleted.
+;; This makes the deletion cascade language aware.
 
 ;;; Install:
 
@@ -106,6 +111,12 @@
 ;;    (define-key viking-mode-map (kbd "C-d l") 'viking-kill-line)
 ;;    (define-key viking-mode-map (kbd "C-d p") 'viking-kill-paragraph)
 ;;    (define-key viking-mode-map (kbd "C-d a") 'viking-kill-buffer)
+
+;; To use viking-mode with expand-region:
+
+;;    (setq viking-use-expand-region-when-loaded t)
+;;    (require 'expand-region)
+;;    (global-set-key (kbd "C-=") 'er/expand-region)
 
 ;; Also, the font face of the short highlight can be modified:
 
@@ -180,7 +191,7 @@
 ;;; Code:
 ;;;; Consts
 
-(defconst viking-mode-version "0.06" "Viking Mode version.")
+(defconst viking-mode-version "0.07" "Viking Mode version.")
 
 (defgroup viking-mode nil
   "Kill first, ask later - an emacs mode for killing things quickly"
@@ -218,6 +229,12 @@ deleted after the kill function, if any. Uses 'just-one-space."
 (defcustom viking-enable-region-kill nil
   "If set to true (default: nil), kill the whole region if
 mark is set."
+  :group 'viking-mode)
+
+(defcustom viking-use-expand-region-when-loaded nil
+  "If set to true (default: nil) and expand-region is installed
+and active for the current major mode, then use its expansions
+to mark regions and delete them."
   :group 'viking-mode)
 
 (defcustom viking-kill-funcs (list 'viking-kill-word 'viking-kill-line-from-point 'viking-kill-line 'viking-kill-paragraph 'viking-kill-buffer)
@@ -346,8 +363,8 @@ should be a point-moving function."
   "Kill region at point, if any"
   (interactive)
   (if viking-really-delete
-      (delete-region (point-min) (point-max) t)
-    (kill-region (point-min) (point-max) t))
+      (delete-region (mark) (point))
+    (kill-region (mark) (point)))
   (message "region deleted"))
 
 
@@ -356,15 +373,24 @@ should be a point-moving function."
 'viking--current-killf,   reset    it   to   the    contents   of
 'viking-kill-funcs if COUNT  is 1 (thus the command  key has been
 pressed the first time in a row"
-  ;; start from scratch
-  (if (eq count 1)
-      (setq viking--current-killf viking-kill-funcs))
+  (progn
+    ;; start from scratch
+    (if (eq count 1)
+        (setq viking--current-killf viking-kill-funcs))
+    
+    ;; only call killer if not done killing
+    (if (and viking--current-killf (not (eobp)))
+        (funcall (pop viking--current-killf))
+      (signal 'end-of-buffer nil)
+      )))
 
-  ;; only call killer if not done killing
-  (if (and viking--current-killf (not (eobp)))
-      (funcall (pop viking--current-killf))
-    (signal 'end-of-buffer nil)
-    ))
+
+(defun viking--er-killw ()
+  "executes er/expand-region (if loaded and enabled) and deletes
+the region marked by it, thus making viking language aware."
+  (er/expand-region 1)
+  (sit-for viking-blink-time)
+  (viking-kill-region))
 
 
 ;;;;; Public interactive kill functions
@@ -454,7 +480,9 @@ If 'viking-greedy-kill is t, clean up spaces and newlines afterwards."
 calling key has been pressed and runs the appropriate
 kill function then."
   (interactive)
-  (viking--killw (viking-last-key-repeats)))
+  (if (and (fboundp 'er/expand-region) viking-use-expand-region-when-loaded)
+      (viking--er-killw)
+    (viking--killw (viking-last-key-repeats))))
 
 
 ;;;; Interface

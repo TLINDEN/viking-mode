@@ -37,6 +37,11 @@ looks if point  ends up alone on an empty  line or inside whitespaces.
 In such a case, those will be deleted as well. The greedy behavior may
 be turned off however.
 
+Another  variant  is  to  use  viking mode  together  with  the  great
+expand-region mode (available  on melpa). If installed  and enabled, a
+region  is first  marked using  expand-region and  then deleted.  This
+makes the deletion cascade language aware.
+
 # Install
 
 To use, save viking-mode.el to a directory in your load-path.
@@ -80,6 +85,12 @@ use separate bindings for each kill function, e.g.:
     (define-key viking-mode-map (kbd "C-d l") 'viking-kill-line)
     (define-key viking-mode-map (kbd "C-d p") 'viking-kill-paragraph)
     (define-key viking-mode-map (kbd "C-d a") 'viking-kill-buffer)
+
+To use viking-mode with expand-region:
+
+    (setq viking-use-expand-region-when-loaded t)
+    (require 'expand-region)
+    (global-set-key (kbd "C-=") 'er/expand-region)
 
 Also, the font face of the short highlight can be modified:
 
@@ -160,7 +171,7 @@ along  with  this  program;  if   not,  write  to  the  Free  Software
 Foundation, Inc.,  59 Temple Place,  Suite 330, Boston,  MA 02111-1307
 USA
        
-Version  : 0.02
+Version  : 0.07
 Author   : T.v.Dein <tlinden@cpan.org>
 Keywords : kill delete
 URL      : https://github.com/tlinden/viking-mode
