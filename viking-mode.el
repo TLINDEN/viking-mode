@@ -254,10 +254,10 @@ to mark regions and delete them."
 
 ;; internal copy of kill functions  without the last one executed will
 ;; be reset to original list every time key pressed the first time
-(defvar viking--current-killf ())
+(defvar viking--current-kill-functions ())
 
 ;; holds last kill function executed so we can repeat it when needed
-(defvar viking--last-killf (car viking-kill-functions))
+(defvar viking--last-kill-function (car viking-kill-functions))
 
 ;;;; Functions
 ;;;;; Utilities
@@ -347,7 +347,7 @@ should be a point-moving function."
     (message "word right of point deleted")))
 
 
-(defun viking--kill-space()
+(defun viking--kill-space(&optional verbose)
   "Kill space around point, including newline(s), but the first."
   (interactive)
   (let* ((lineA 0) (lineB 0)
@@ -368,7 +368,8 @@ should be a point-moving function."
     (if (= lineA lineB)
         (just-one-space)
       (delete-region beg end))
-    (message "spaces cleared")))
+    (when verbose
+      (message "spaces cleared"))))
 
 ;; implements #2: behave different inside region
 ;; FIXME: maybe also do word->line->region?
@@ -384,36 +385,37 @@ should be a point-moving function."
 
 
 (defun viking--next-killf()
-  "Return next kill function, update 'viking--current-killf and
-'viking--last-killf."
-  (if (and (eq (length viking--current-killf) 1)
-           (not (equal (car viking--current-killf) 'viking-kill-buffer)))
+  "Return next kill function, update 'viking--current-kill-functions and
+'viking--last-kill-function."
+  (if (and (eq (length viking--current-kill-functions) 1)
+           (not (equal (car viking--current-kill-functions) 'viking-kill-buffer)))
       ;; just return, do not pop
-      (car viking--current-killf)
+      (setq viking--last-kill-function (car viking--current-kill-functions))
     ;; else: remove element from the front and return it
-    (pop viking--current-killf)))
+    (setq viking--last-kill-function (pop viking--current-kill-functions)))
+  viking--last-kill-function)
 
 
 (defun viking--killw (count)
   "execute  kill function  from  the list  of  kill functions  in
-'viking--current-killf,   reset    it   to   the    contents   of
+'viking--current-kill-functions,   reset    it   to   the    contents   of
 'viking-kill-functions if COUNT  is 1 (thus the command  key has been
 pressed the first time in a row"
   ;; start from scratch
   (if (eq count 1)
-      (setq viking--current-killf viking-kill-functions))
+      (setq viking--current-kill-functions viking-kill-functions))
   
   ;; end of buffer, but it's not empty yet
   ;; and the last line, where we are, is empty,
   ;; so move one line up in order to keep viking
   ;; mode going
-  (if (and (eobp)
-           (> (buffer-size) 0)
-           (eq (line-beginning-position) (point)))
-      (progn (message "jump 1 line up") (forward-line -1)))
+  (when (and (eobp)
+             (> (buffer-size) 0)
+             (eq (line-beginning-position) (point)))
+    (forward-line -1))
 
   ;; only call killer if not done killing
-  (if (and viking--current-killf (not (eobp)))
+  (if (and viking--current-kill-functions (not (eobp)))
       (funcall (viking--next-killf))
     (signal 'end-of-buffer nil)
     ))
@@ -439,9 +441,9 @@ If 'viking-greedy-kill is t, clean up spaces and newlines afterwards."
     ;; else normal processing
     (if (viking--point-is-in-space)
         (progn
-          (viking--kill-space)
+          (viking--kill-space t)
           ;; reset kill func list:
-          (setq viking--current-killf viking-kill-functions))
+          (setq viking--current-kill-functions viking-kill-functions))
       (progn
         (if (or (eq (point) (line-beginning-position))
                 (memq (preceding-char) '(?\t ?\ )))
@@ -522,7 +524,7 @@ kill function then."
 (defun viking-repeat-last-kill()
   (interactive)
   "Repeat the last executed kill function"
-  (funcall viking--last-killf))
+  (funcall viking--last-kill-function))
 
 
 ;;;; Interface
