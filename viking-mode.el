@@ -410,7 +410,7 @@ pressed the first time in a row"
   (if (and (eobp)
            (> (buffer-size) 0)
            (eq (line-beginning-position) (point)))
-      (progn (message "jump 1 line up") (previous-line)))
+      (progn (message "jump 1 line up") (forward-line -1)))
 
   ;; only call killer if not done killing
   (if (and viking--current-killf (not (eobp)))
