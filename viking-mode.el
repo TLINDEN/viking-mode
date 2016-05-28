@@ -132,7 +132,7 @@
 ;; The kill functions to be called in a row can be customized as well. The
 ;; default is this list:
 
-;;     (setq vikink-kill-functions (list 'viking-kill-word
+;;     (setq viking-kill-functions (list 'viking-kill-word
 ;;                                       'viking-kill-line-from-point
 ;;                                       'viking-kill-line
 ;;                                       'viking-kill-paragraph
@@ -385,8 +385,12 @@ should be a point-moving function."
 (defun viking--next-killf()
   "Return next kill function, update 'viking--current-killf and
 'viking--last-killf."
-  (setq viking--last-killf (pop viking--current-killf))
-  viking--last-killf)
+  (if (and (eq (length viking--current-killf) 1)
+           (not (equal (car viking--current-killf) 'viking-kill-buffer)))
+      ;; just return, do not pop
+      (car viking--current-killf)
+    ;; else: remove element from the front and return it
+    (pop viking--current-killf)))
 
 
 (defun viking--killw (count)
