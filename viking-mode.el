@@ -373,6 +373,7 @@ should be a point-moving function."
 ;; implements #2: behave different inside region
 ;; FIXME: maybe also do word->line->region?
 ;;        Currently it just throws the whole region away
+;; FIXME: if called via expand-region, different output
 (defun viking-kill-region()
   "Kill region at point, if any"
   (interactive)
@@ -398,16 +399,24 @@ should be a point-moving function."
 'viking--current-killf,   reset    it   to   the    contents   of
 'viking-kill-functions if COUNT  is 1 (thus the command  key has been
 pressed the first time in a row"
-  (progn
-    ;; start from scratch
-    (if (eq count 1)
-        (setq viking--current-killf viking-kill-functions))
-    
-    ;; only call killer if not done killing
-    (if (and viking--current-killf (not (eobp)))
-        (funcall (viking--next-killf))
-      (signal 'end-of-buffer nil)
-      )))
+  ;; start from scratch
+  (if (eq count 1)
+      (setq viking--current-killf viking-kill-functions))
+  
+  ;; end of buffer, but it's not empty yet
+  ;; and the last line, where we are, is empty,
+  ;; so move one line up in order to keep viking
+  ;; mode going
+  (if (and (eobp)
+           (> (buffer-size) 0)
+           (eq (line-beginning-position) (point)))
+      (progn (message "jump 1 line up") (previous-line)))
+
+  ;; only call killer if not done killing
+  (if (and viking--current-killf (not (eobp)))
+      (funcall (viking--next-killf))
+    (signal 'end-of-buffer nil)
+    ))
 
 
 (defun viking--er-killw ()
