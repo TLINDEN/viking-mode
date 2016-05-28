@@ -19,7 +19,7 @@
 ;; Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 ;; USA
 
-;; Version: 0.07
+;; Version: 0.08
 ;; Author: T.v.Dein <tlinden@cpan.org>
 ;; Keywords: kill delete
 ;; URL: https://github.com/tlinden/viking-mode
@@ -53,6 +53,9 @@
 ;; However, this only works when pressing the  key in a row. If you do
 ;; something  else in  between, it  starts from  scratch (i.e.  delete
 ;; word).
+
+;; You can also repeat the last delete function with C-S-d (ctrl-shift-d)
+;; multiple times.
 
 ;; By default viking-mode is greedy: after applying a kill function it
 ;; looks  if  point  ends  up  alone   on  an  empty  line  or  inside
@@ -102,6 +105,10 @@
 
 ;;    (define-key viking-mode-map (kbd "C-k") 'viking-kill-thing-at-point)
 
+;; The key binding to repeat the last kill function can be changed:
+
+;;     (define-key viking-mode-map (kbd "M-d") 'viking-repeat-last-kill)
+
 ;; In case  you don't like  the default  key binding cascade,  you may
 ;; also use separate bindings for each kill function, e.g.:
 
@@ -125,9 +132,11 @@
 ;; The kill functions to be called in a row can be customized as well. The
 ;; default is this list:
 
-;;     (setq vikink-kill-funcs (list 'viking-kill-word 'viking-kill-line-from-point
-;;                                   'viking-kill-line 'viking-kill-paragraph
-;;                                   'viking-kill-buffer))
+;;     (setq vikink-kill-functions (list 'viking-kill-word
+;;                                       'viking-kill-line-from-point
+;;                                       'viking-kill-line
+;;                                       'viking-kill-paragraph
+;;                                       'viking-kill-buffer))
 
 ;; Normally there should be no need  to modify it. However, this gives
 ;; you much more flexibility.
@@ -191,7 +200,7 @@
 ;;; Code:
 ;;;; Consts
 
-(defconst viking-mode-version "0.07" "Viking Mode version.")
+(defconst viking-mode-version "0.08" "Viking Mode version.")
 
 (defgroup viking-mode nil
   "Kill first, ask later - an emacs mode for killing things quickly"
@@ -237,13 +246,18 @@ and active for the current major mode, then use its expansions
 to mark regions and delete them."
   :group 'viking-mode)
 
-(defcustom viking-kill-funcs (list 'viking-kill-word 'viking-kill-line-from-point 'viking-kill-line 'viking-kill-paragraph 'viking-kill-buffer)
+(defcustom viking-kill-functions (list 'viking-kill-word 'viking-kill-line-from-point 'viking-kill-line 'viking-kill-paragraph 'viking-kill-buffer)
   "The actual kill functions being called in a row starting with the first entry"
   :group 'viking-mode)
 
-;; internal copy
+;;;;; Internal variables
+
+;; internal copy of kill functions  without the last one executed will
+;; be reset to original list every time key pressed the first time
 (defvar viking--current-killf ())
 
+;; holds last kill function executed so we can repeat it when needed
+(defvar viking--last-killf (car viking-kill-functions))
 
 ;;;; Functions
 ;;;;; Utilities
@@ -368,19 +382,26 @@ should be a point-moving function."
   (message "region deleted"))
 
 
+(defun viking--next-killf()
+  "Return next kill function, update 'viking--current-killf and
+'viking--last-killf."
+  (setq viking--last-killf (pop viking--current-killf))
+  viking--last-killf)
+
+
 (defun viking--killw (count)
   "execute  kill function  from  the list  of  kill functions  in
 'viking--current-killf,   reset    it   to   the    contents   of
-'viking-kill-funcs if COUNT  is 1 (thus the command  key has been
+'viking-kill-functions if COUNT  is 1 (thus the command  key has been
 pressed the first time in a row"
   (progn
     ;; start from scratch
     (if (eq count 1)
-        (setq viking--current-killf viking-kill-funcs))
+        (setq viking--current-killf viking-kill-functions))
     
     ;; only call killer if not done killing
     (if (and viking--current-killf (not (eobp)))
-        (funcall (pop viking--current-killf))
+        (funcall (viking--next-killf))
       (signal 'end-of-buffer nil)
       )))
 
@@ -407,7 +428,7 @@ If 'viking-greedy-kill is t, clean up spaces and newlines afterwards."
         (progn
           (viking--kill-space)
           ;; reset kill func list:
-          (setq viking--current-killf viking-kill-funcs))
+          (setq viking--current-killf viking-kill-functions))
       (progn
         (if (or (eq (point) (line-beginning-position))
                 (memq (preceding-char) '(?\t ?\ )))
@@ -472,7 +493,7 @@ If 'viking-greedy-kill is t, clean up spaces and newlines afterwards."
       (viking--kill-region beg end)
       (message "buffer deleted"))))
 
-;;;;; Primary key binding function
+;;;;; Primary key binding functions
 
 
 (defun viking-kill-thing-at-point()
@@ -485,6 +506,12 @@ kill function then."
     (viking--killw (viking-last-key-repeats))))
 
 
+(defun viking-repeat-last-kill()
+  (interactive)
+  "Repeat the last executed kill function"
+  (funcall viking--last-killf))
+
+
 ;;;; Interface
 ;;;###autoload
 
@@ -494,6 +521,7 @@ kill function then."
   :group 'viking-mode
   :keymap (let ((map (make-sparse-keymap)))
             (define-key map (kbd "C-d") 'viking-kill-thing-at-point)
+            (define-key map (kbd "C-S-D") 'viking-repeat-last-kill)
             map))
 
 ;; just in case someone wants to use it globally

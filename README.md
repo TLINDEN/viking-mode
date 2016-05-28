@@ -32,6 +32,9 @@ Like:
 However, this  only works when  pressing the key in  a row. If  you do
 something else in between, it starts from scratch (i.e.  delete word).
 
+You can also repeat the last delete function with C-S-d (ctrl-shift-d)
+multiple times.
+
 By default  viking-mode is greedy:  after applying a kill  function it
 looks if point  ends up alone on an empty  line or inside whitespaces.
 In such a case, those will be deleted as well. The greedy behavior may
@@ -76,6 +79,10 @@ You can change the default key binding by:
 
     (define-key viking-mode-map (kbd "C-k") 'viking-kill-thing-at-point)
 
+The key binding to repeat the last kill function can be changed:
+
+    (define-key viking-mode-map (kbd "M-d") 'viking-repeat-last-kill)
+
 In case you  don't like the default key binding  cascade, you may also
 use separate bindings for each kill function, e.g.:
 
@@ -95,6 +102,18 @@ To use viking-mode with expand-region:
 Also, the font face of the short highlight can be modified:
 
     M-x customize-face  (select viking-blink)
+
+The kill functions to be called in a row can be customized as well. The
+default is this list:
+
+    (setq vikink-kill-functions (list 'viking-kill-word
+                                      'viking-kill-line-from-point
+                                      'viking-kill-line
+                                      'viking-kill-paragraph
+                                      'viking-kill-buffer))
+
+Normally there should be no need  to modify it. However, this gives
+you much more flexibility.
 
 Or, modify all available viking-mode variables interactively with:
 
@@ -171,7 +190,7 @@ along  with  this  program;  if   not,  write  to  the  Free  Software
 Foundation, Inc.,  59 Temple Place,  Suite 330, Boston,  MA 02111-1307
 USA
        
-Version  : 0.07
+Version  : 0.08
 Author   : T.v.Dein <tlinden@cpan.org>
 Keywords : kill delete
 URL      : https://github.com/tlinden/viking-mode
