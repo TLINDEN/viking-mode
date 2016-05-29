@@ -101,6 +101,10 @@
 
 ;;     (setq viking-enable-region-kill t)
 
+;; To turn off short blinking of deleted things (visual feedback):
+
+;;     (setq viking-enable-blinking nil)
+
 ;; You can change the default key binding by:
 
 ;;    (define-key viking-mode-map (kbd "C-k") 'viking-kill-thing-at-point)
@@ -250,6 +254,11 @@ to mark regions and delete them."
   "The actual kill functions being called in a row starting with the first entry"
   :group 'viking-mode)
 
+(defcustom viking-enable-blinking t
+  "If set to true (default) highlight the deleted text shortly
+for 'viking-blink-time seconds. Set to nil to disable the feature"
+  :group 'viking-mode)
+
 ;;;;; Internal variables
 
 ;; internal copy of kill functions  without the last one executed will
@@ -269,12 +278,13 @@ to mark regions and delete them."
 region between 'begin and 'end using 'font-lock-viking-face
 for 'viking-blink-time seconds."
   (interactive)
-  (let* ((rh (make-overlay begin end)))
-    (progn
-      (overlay-put rh 'face 'viking-blink)
-      (sit-for viking-blink-time t)
-      (delete-overlay rh)
-      )))
+  (when viking-enable-blinking
+    (let* ((rh (make-overlay begin end)))
+      (progn
+        (overlay-put rh 'face 'viking-blink)
+        (sit-for viking-blink-time t)
+        (delete-overlay rh)
+        ))))
 
 (defun viking--get-point (symbol &optional arg)
   "Returns the point by evaluating 'symbol, which
@@ -346,14 +356,13 @@ should be a point-moving function."
     (viking--kill-region beg end)
     (message "word right of point deleted")))
 
-
 (defun viking--kill-space(&optional verbose)
   "Kill space around point, including newline(s), but the first."
   (interactive)
   (let* ((lineA 0) (lineB 0)
          (beg (save-excursion
                 (skip-chars-backward " \t\r\n")
-                (cond ((looking-at "\r\n")
+                (cond ((looking-at "\r\n") ;; keep first newline intact
                        (forward-char 2))
                       ((looking-at "\n")
                        (forward-char 1)))
@@ -366,7 +375,10 @@ should be a point-moving function."
          )
     (viking--blink-region beg end)
     (if (= lineA lineB)
-        (just-one-space)
+        (progn
+          (just-one-space)
+          (when (eobp) ;; raimaining before eob?
+            (delete-trailing-whitespace)))
       (delete-region beg end))
     (when verbose
       (message "spaces cleared"))))
@@ -409,6 +421,15 @@ pressed the first time in a row"
   ;; and the last line, where we are, is empty,
   ;; so move one line up in order to keep viking
   ;; mode going
+  (message "/-------")
+  (when (eobp)
+    (message " (eobp)"))
+  (when (> (buffer-size) 0)
+    (message " (> (buffer-size) 0)"))
+  (when (eq (line-beginning-position) (point))
+    (message " (eq (line-beginning-position) (point))")) 
+  (message "\\-------")
+  
   (when (and (eobp)
              (> (buffer-size) 0)
              (eq (line-beginning-position) (point)))
@@ -425,7 +446,8 @@ pressed the first time in a row"
   "executes er/expand-region (if loaded and enabled) and deletes
 the region marked by it, thus making viking language aware."
   (er/expand-region 1)
-  (sit-for viking-blink-time)
+  (when viking-enable-blinking
+    (sit-for viking-blink-time))
   (viking-kill-region))
 
 

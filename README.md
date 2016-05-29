@@ -75,6 +75,14 @@ To   turn  off   greedy   deleting  of   whitespace  remainders,   set
 
     (setq viking-greedy-kill nil)
 
+To enable quick deletion of regions using the normal key binding:
+
+     (setq viking-enable-region-kill t)
+
+To turn off short blinking of deleted things (visual feedback):
+
+     (setq viking-enable-blinking nil)
+
 You can change the default key binding by:
 
     (define-key viking-mode-map (kbd "C-k") 'viking-kill-thing-at-point)
