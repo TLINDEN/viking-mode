@@ -377,7 +377,7 @@ should be a point-moving function."
     (if (= lineA lineB)
         (progn
           (just-one-space)
-          (when (eobp) ;; raimaining before eob?
+          (when (eobp) ;; remaining spaces before eob?
             (delete-trailing-whitespace)))
       (delete-region beg end))
     (when verbose
@@ -420,16 +420,7 @@ pressed the first time in a row"
   ;; end of buffer, but it's not empty yet
   ;; and the last line, where we are, is empty,
   ;; so move one line up in order to keep viking
-  ;; mode going
-  (message "/-------")
-  (when (eobp)
-    (message " (eobp)"))
-  (when (> (buffer-size) 0)
-    (message " (> (buffer-size) 0)"))
-  (when (eq (line-beginning-position) (point))
-    (message " (eq (line-beginning-position) (point))")) 
-  (message "\\-------")
-  
+  ;; mode going  
   (when (and (eobp)
              (> (buffer-size) 0)
              (eq (line-beginning-position) (point)))
