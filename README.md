@@ -114,7 +114,7 @@ Also, the font face of the short highlight can be modified:
 The kill functions to be called in a row can be customized as well. The
 default is this list:
 
-    (setq vikink-kill-functions (list 'viking-kill-word
+    (setq viking-kill-functions (list 'viking-kill-word
                                       'viking-kill-line-from-point
                                       'viking-kill-line
                                       'viking-kill-paragraph
