@@ -198,6 +198,26 @@
 
 ;; Goto https://github.com/tlinden/viking-mode and file a new issue.
 
+;;; History:
+
+;; The idea  to use repeating keys  came from the mode  home-end.el by
+;; Kai  Grossjohann and  Toby  Speight,  which is  today  part of  the
+;; emacs-goodies package (at  least I re-discovered it  there).  I had
+;; the  two functions  in my  .emacs for  years. Finally  I wrote  the
+;; function viking-last-key-repeats  which is  much more  flexible but
+;; is nevertheless based on the idea in home-end.el.
+
+;; So, I'd like to say Thanks to those two guys: Not only did you make
+;; my emacs  live better for  years but  also helped me  creating this
+;; small minor  mode. Therefore,  just for completeness,  here's their
+;; copyleft:
+
+;;   home-end.el --- Alternative Home and End commands.
+;;   Copyright 1996 Kai Grossjohann and Toby Speight
+;;   Copyright 2002-2011 Toby Speight
+;;
+;;   home-end.el is free software distributed under the terms of the GNU
+;;   General Public Licence, version 3.
 
 
 
