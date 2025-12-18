@@ -175,7 +175,7 @@ When you put this into your .emacs config, then you can do:
 
 # Reporting Bugs
 
-Goto https://github.com/tlinden/viking-mode and file a new issue.
+Goto https://codeberg.org/scip/viking-mode and file a new issue.
 
 # Meta
 
@@ -201,5 +201,5 @@ USA
 Version  : 0.08
 Author   : T.v.Dein <tlinden@cpan.org>
 Keywords : kill delete
-URL      : https://github.com/tlinden/viking-mode
+URL      : https://codeberg.org/scip/viking-mode
 License  : GNU General Public License >= 2

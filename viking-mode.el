@@ -22,7 +22,7 @@
 ;; Version: 0.08
 ;; Author: T.v.Dein <tlinden@cpan.org>
 ;; Keywords: kill delete
-;; URL: https://github.com/tlinden/viking-mode
+;; URL: https://codeberg.org/scip/viking-mode
 ;; License: GNU General Public License >= 2
 
 ;;; Commentary:
@@ -196,7 +196,7 @@
 
 ;;; Reporting Bugs:
 
-;; Goto https://github.com/tlinden/viking-mode and file a new issue.
+;; Goto https://codeberg.org/scip/viking-mode and file a new issue.
 
 ;;; History:
 
@@ -230,7 +230,7 @@
   "Kill first, ask later - an emacs mode for killing things quickly"
   :group 'extensions
   :group 'tools
-  :link '(url-link :tag "Repository" "https://github.com/tlinden/viking-mode"))
+  :link '(url-link :tag "Repository" "https://codeberg.org/scip/viking-mode"))
 
 
 ;;;; Customizable variables
