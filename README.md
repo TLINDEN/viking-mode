@@ -1,4 +1,9 @@
+> [!CAUTION]
+> This software is now being maintained on [Codeberg](https://codeberg.org/scip/viking-mode/).
+
+
 # viking-mode
+
 Kill first, ask later - an emacs minor mode for killing things quickly
 
 [![MELPA](http://melpa.org/packages/viking-mode-badge.svg)](http://melpa.org/#/viking-mode)
